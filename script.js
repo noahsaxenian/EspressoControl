@@ -1,43 +1,91 @@
 console.log("we've reached the script");
 
-function updateState(state) {
+
+function updateStatus(state) {
     const tempDisplay = document.getElementById("currentTemp");
     const setpointDisplay = document.getElementById("setpointTemp");
+    const modeSwitch = document.getElementById("modeSwitch");
+    const powerSwitch = document.getElementById("powerSwitch");
+    const pwmDisplay = document.getElementById("pwmVal");
+    
+    pwmDisplay.textContent = state.pwm_val.toFixed(2);
+    
+    tempDisplay.textContent = state.current_temp.toFixed(1);
+     if (state.setpoint === null) {
+        setpointDisplay.textContent = "--"; // Or another placeholder value
+    } else {
+        setpointDisplay.textContent = state.setpoint.toFixed(1);
+    }
+    
+    if (document.activeElement !== modeSwitch) {
+        modeSwitch.checked = (state.mode === "steam");
+    }
+    if (document.activeElement !== powerSwitch) {
+        powerSwitch.checked = state.power;
+    }
+    
+    updateSwitchAvailability();
+    
+    if (state.on_interval === true) {
+        updateChart(state.current_temp, state.setpoint);
+    }
+    
+}
+
+function updateSettings(state) {
     const pVal = document.getElementById("pValue");
     const iVal = document.getElementById("iValue");
     const dVal = document.getElementById("dValue");
     const espressoTemp = document.getElementById("espressoTemp");
     const steamTemp = document.getElementById("steamTemp");
-    const modeSwitch = document.getElementById("modeSwitch");
     
-    tempDisplay.textContent = state.current_temp.toFixed(1);
-    setpointDisplay.textContent = state.setpoint.toFixed(1);
     pVal.value = state.PID.P;
     iVal.value = state.PID.I;
     dVal.value = state.PID.D;
     espressoTemp.value = state.mode_temps.espresso;
     steamTemp.value = state.mode_temps.steam;
-    modeSwitch.checked = (state.mode === "steam");
 
 }
 
+function getStatus() {
+    sendRequest("/status", {"interval": true});
+}
+
+const powerSwitch = document.getElementById('powerSwitch');
+const modeSwitch = document.getElementById('modeSwitch');
+const modeSlider = document.querySelector('.slider.mode');
+
 // Handle power switch
-document.getElementById("powerSwitch").addEventListener("change", async (event) => {
+powerSwitch.addEventListener("change", async (event) => {
     const powerState = event.target.checked ? "on" : "off"; // Determine the state
-    console.log(powerState);
-    await sendRequest(`/power/${powerState}`);
+    await sendRequest("/power", {"power": powerState});
+    getStatus();
+    updateSwitchAvailability();
 });
+
+function updateSwitchAvailability(){
+    if (powerSwitch.checked) {
+        // Enable the mode switch when power is on
+        modeSwitch.disabled = false;
+    } else {
+        // Disable the mode switch when power is off
+        modeSwitch.disabled = true;
+    }
+}
+
 
 // Handle mode switch
 document.getElementById("modeSwitch").addEventListener("change", async (event) => {
     const mode = event.target.checked ? "steam" : "espresso";
-    await sendRequest(`/mode/${mode}`);
+    await sendRequest("/mode", {"mode": mode});
+    getStatus();
 });
 
 
 // Function to send HTTP requests
 async function sendRequest(endpoint, data) {
     try {
+        console.log("sending request", endpoint, data)
         const response = await fetch(endpoint, {
             method: "POST",
             headers: {
@@ -47,24 +95,17 @@ async function sendRequest(endpoint, data) {
         });
         const result = await response.json();
         console.log(result);
+        if (endpoint === "/status") {
+            updateStatus(result);
+        }
+        if (endpoint === "/settings") {
+            updateSettings(result);
+        }
+        if (endpoint === "/history") {
+            createHistory(result);
+        }
     } catch (error) {
-        console.error("Error sending request:", error);
-    }
-}
-
-async function getStatus() {
-    try {
-        const response = await fetch("/status", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        });
-        const result = await response.json();
-        console.log(result);
-        updateState(result)
-    } catch (error) {
-        console.error("Error sending request:", error);
+        console.error("Error sending request:", endpoint, error);
     }
 }
 
@@ -75,22 +116,17 @@ const saveBtn = document.getElementById("saveSettings");
 
 // Open modal
 settingsBtn.onclick = function() {
-    stopStatusUpdates();
     modal.style.display = "block";
 }
 
-// Close modal
-function closeModal() {
+closeBtn.onclick = function() {
     modal.style.display = "none";
-    startStatusUpdates();
 }
-
-closeBtn.onclick = closeModal;
 
 // Close when clicking outside
 window.onclick = function(event) {
     if (event.target == modal) {
-        closeModal();
+        modal.style.display = "none";
     }
 }
 
@@ -101,7 +137,7 @@ saveBtn.addEventListener("click", async () => {
             espresso: parseFloat(document.getElementById("espressoTemp").value),
             steam: parseFloat(document.getElementById("steamTemp").value)
         },
-        pid: {
+        PID: {
             P: parseFloat(document.getElementById("pValue").value),
             I: parseFloat(document.getElementById("iValue").value),
             D: parseFloat(document.getElementById("dValue").value)
@@ -109,28 +145,70 @@ saveBtn.addEventListener("click", async () => {
     };
     
     try {
-        await sendRequest("/settings", settings);
-        closeModal();
+        await sendRequest("/save_settings", settings);
+        modal.style.display = "none";
     } catch (error) {
         console.error("Error saving settings:", error);
     }
 });
 
-
-let statusInterval; // Store the interval ID
-
-// Function to start the status updates
-function startStatusUpdates() {
-    console.log("trying to restart status updates");
-    statusInterval = setInterval(getStatus, 1000);
+function createHistory(history){
+    const tempHistory = history.temp_history;
+    const setpointHistory = history.setpoint_history;
+    const timeLabels = Array.from({ length: setpointHistory.length }, (_, i) => {
+        const step = 10 / (setpointHistory.length - 1); // Calculate the step size
+        return -10 + i * step; // Generate each time label
+    });
+    
+    temperatureGraph.data.labels = timeLabels;   
+    temperatureGraph.data.datasets[0].data = tempHistory;
+    temperatureGraph.data.datasets[1].data = setpointHistory;
+    //temperatureGraph.config.options.scales.x.ticks.stepSize = 1;
+    
+    temperatureGraph.update();
 }
 
-// Function to stop the status updates
-function stopStatusUpdates() {
-    if (statusInterval) {
-        clearInterval(statusInterval);
-        statusInterval = null;
+let ctx = document.getElementById("temperatureGraph").getContext('2d');
+
+const data = {
+    labels: [],  // X-axis labels (could be time or index)
+    datasets: [
+        { label: "Temp", data: [], borderColor: 'rgba(255, 99, 132, 1)', fill: false, tension: 0.1 },
+        { label: "Setpoint", data: [], borderColor: 'rgba(54, 162, 235, 1)', fill: false, tension: 0.1 }
+    ]
+};
+
+const config = {
+    type: 'line',
+    data,
+    options: {
+        responsive: true,
+        scales: {
+            x: {title: { display: true, text: 'Time (min)' },
+                type: "linear"
+                },
+            y: { title: { display: true, text: 'Temp (°C)' } }
+        },
+        animation: {
+            duration: 0
+        }
     }
+};
+
+let temperatureGraph = new Chart(ctx, config);
+
+function updateChart(newTemp, newSetpoint) {    
+    temperatureGraph.data.datasets[0].data.shift();
+    temperatureGraph.data.datasets[1].data.shift();
+    
+    temperatureGraph.data.datasets[0].data.push(newTemp);
+    temperatureGraph.data.datasets[1].data.push(newSetpoint);
+    temperatureGraph.update();
 }
-// Start the updates when the page loads
-startStatusUpdates();
+
+getStatus();
+sendRequest("/history");
+sendRequest("/settings");
+
+
+setInterval(getStatus, 1000);

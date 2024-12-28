@@ -3,15 +3,8 @@ import uasyncio as asyncio
 from machine import Pin
 
 class AsyncPWM:
-    def __init__(self, pin_num, freq=1.0, duty=0.5):
-        """
-        Initialize AsyncPWM controller
-        
-        Args:
-            pin_num: GPIO pin number
-            freq: Frequency in Hz (0.1-1.0)
-            duty: Duty cycle (0.0-1.0)
-        """
+    def __init__(self, pin_num, freq=1.0, duty=0.0):
+
         self.pin = Pin(pin_num, Pin.OUT)
         self.freq = min(max(0.1, freq), 1.0)  # Limit frequency range
         self.duty = min(max(0.0, duty), 1.0)  # Limit duty cycle range
@@ -36,8 +29,9 @@ class AsyncPWM:
             off_time = self.period * (1 - self.duty)
             
             # Generate PWM cycle
-            self.pin.value(1)
-            await asyncio.sleep(on_time)
+            if on_time != 0:
+                self.pin.value(1)
+                await asyncio.sleep(on_time)
             self.pin.value(0)
             await asyncio.sleep(off_time)
             

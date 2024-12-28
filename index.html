@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width,initial-scale=1.0">
         <link rel="stylesheet" href="style.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <title>Miss Silvia Control</title>
         
     </head>
@@ -12,14 +13,29 @@
             <h1>Miss Silvia Control</h1>
             
             <div class="control-group">
-                <h3>Power Control</h3>
+                <h3 style="margin-top: 0;">Power Control</h3>
                 <div class="control-item">
-                    <label class="switch">
-                        <input type="checkbox" id="powerSwitch">
-                        <span class="slider"></span>
-                    </label>
-                    <span>Power</span>
+                    <div class="label left">Off</div>
+                    <div class="switch-container">
+                        <label class="switch">
+                            <input type="checkbox" id="powerSwitch">
+                            <span class="slider power"></span>
+                        </label>
+                    </div>
+                    <div class="label right">On</div>
                 </div>
+                
+                <div class="control-item">
+                    <div class="label left">Espresso</div>
+                    <div class="switch-container">
+                        <label class="switch">
+                            <input type="checkbox" id="modeSwitch" disabled>
+                            <span class="slider mode"></span>
+                        </label>
+                    </div>
+                    <div class="label right">Steam</div>
+                </div>
+                
                 <div class="status">
                     <div class="temp-display">
                         Current Temperature: <span id="currentTemp">--</span>°C
@@ -27,17 +43,15 @@
                     <div class="temp-display">
                         Setpoint Temperature: <span id="setpointTemp">--</span>°C
                     </div>
+                    <div class="temp-display">
+                        PWM Duty Cycle: <span id="pwmVal">--</span>
+                    </div>
                 </div>
             </div> 
-
+            
             <div class="control-group">
-                <h3>Mode Selection</h3>
-                <div class="control-item">
-                    <label class="switch">
-                        <input type="checkbox" id="modeSwitch">
-                        <span class="slider"></span>
-                    </label>
-                    <span>Espresso / Steam Mode</span>
+                <div id="chart">
+                    <canvas id="temperatureGraph" width="400" height="300"></canvas>
                 </div>
             </div>
             
@@ -46,7 +60,7 @@
                     ⚙️ Settings
                 </button>
             </div>
-
+            
         </div>
         
         <div id="settingsModal" class="modal">
@@ -89,7 +103,7 @@
                 </div>
             </div>
         </div>
-
+        
         <script src="script.js"></script>
 
     </body>
