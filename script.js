@@ -7,11 +7,17 @@ function updateStatus(state) {
     const modeSwitch = document.getElementById("modeSwitch");
     const powerSwitch = document.getElementById("powerSwitch");
     const pwmDisplay = document.getElementById("pwmVal");
+    const alarmDisplay = document.getElementById("currentAlarm");
     
     pwmDisplay.textContent = state.pwm_val.toFixed(2);
+        
+    if (state.current_temp === null) {
+        tempDisplay.textContent = "--"; // Or another placeholder value
+    } else {
+        tempDisplay.textContent = state.current_temp.toFixed(1);
+    }
     
-    tempDisplay.textContent = state.current_temp.toFixed(1);
-     if (state.setpoint === null) {
+    if (state.setpoint === null) {
         setpointDisplay.textContent = "--"; // Or another placeholder value
     } else {
         setpointDisplay.textContent = state.setpoint.toFixed(1);
@@ -28,6 +34,12 @@ function updateStatus(state) {
     
     if (state.on_interval === true) {
         updateChart(state.current_temp, state.setpoint);
+    }
+    
+    if (state.alarm_time === null) {
+        alarmDisplay.textContent = "--";
+    } else {
+        alarmDisplay.textContent = state.alarm_time;
     }
     
 }
@@ -104,10 +116,35 @@ async function sendRequest(endpoint, data) {
         if (endpoint === "/history") {
             createHistory(result);
         }
+
     } catch (error) {
         console.error("Error sending request:", endpoint, error);
     }
 }
+
+// Alarm setup
+const alarmInput = document.getElementById("alarmTime");
+const setAlarmBtn = document.getElementById("setAlarmBtn");
+
+setAlarmBtn.addEventListener("click", async () => {
+    const alarmTime = alarmInput.value;
+
+    if (!alarmTime) {
+        alert("Please select a time for the alarm.");
+        return;
+    }
+
+    // Send the time to the backend
+    await sendRequest("/schedule_alarm", { alarm_time: alarmTime });
+    
+    document.getElementById("currentAlarm").textContent = alarmTime;
+});
+
+document.getElementById("cancelAlarmBtn").addEventListener("click", async () => {
+    await sendRequest("/schedule_alarm", { alarm_time: null });
+    
+    document.getElementById("currentAlarm").textContent = "--";
+});
 
 const modal = document.getElementById("settingsModal");
 const settingsBtn = document.getElementById("settingsBtn");

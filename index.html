@@ -56,6 +56,20 @@
             </div>
             
             <div class="control-group">
+                <h3 style="margin-top: 0;">Schedule Heating</h3>
+                <div class="control-item">
+                    <input type="time" id="alarmTime" class="time-input">
+                    <button id="setAlarmBtn" class="btn">Set Timer</button>
+                    <button id="cancelAlarmBtn" class="cancel-btn">Cancel</button>
+                </div>
+                <div class="status">
+                    <div class="temp-display">
+                        Heating Scheduled: <span id="currentAlarm">--</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
                 <button id="settingsBtn" class="btn settings-btn">
                     ⚙️ Settings
                 </button>

@@ -30,8 +30,10 @@ class AsyncPWM:
             
             # Generate PWM cycle
             if on_time != 0:
+                print('on')
                 self.pin.value(1)
                 await asyncio.sleep(on_time)
+            print('off')
             self.pin.value(0)
             await asyncio.sleep(off_time)
             

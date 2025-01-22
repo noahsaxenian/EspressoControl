@@ -1,9 +1,11 @@
 import network
+import ntptime
 import socket
 import time
 from secrets import mysecrets
 import uasyncio as asyncio
 import ujson
+import gc
 
 class WebServer:
     def __init__(self, controller):
@@ -11,7 +13,7 @@ class WebServer:
         self.server_task = None
         self._current_path = "/"
         self.controller = controller
-        
+        self.wlan = None
         
     @property
     def current_path(self):
@@ -19,15 +21,21 @@ class WebServer:
         return self._current_path
         
     def connect_wifi(self):
-        wlan = network.WLAN(network.STA_IF)
-        wlan.active(True)
-        wlan.connect(mysecrets['SSID'], mysecrets['key'])
-        while wlan.ifconfig()[0] == '0.0.0.0':
+        self.wlan = network.WLAN(network.STA_IF)
+        self.wlan.active(True)
+        self.wlan.connect(mysecrets['SSID'], mysecrets['key'])
+        while self.wlan.ifconfig()[0] == '0.0.0.0':
             print('.', end=' ')
             time.sleep(1)
-        self.ip_address = wlan.ifconfig()[0]
+        self.ip_address = self.wlan.ifconfig()[0]
         print(f'Connected - IP: {self.ip_address}')
         return self.ip_address
+    
+    def check_wifi(self):
+        if self.wlan:
+            return self.wlan.isconnected()
+        else:
+            return False
     
     def handle_data(self, path, data):        
         content = {}
@@ -47,7 +55,6 @@ class WebServer:
             with open('script.js', 'r', encoding='utf-8') as file:
                 content = file.read()
             content_type = "application/javascript"
-            #print(content[-100:])
         else:
             # handle user requests
             if path == '/power':
@@ -62,6 +69,8 @@ class WebServer:
                 cont = self.controller.save_settings(data)
             elif path == '/history':
                 cont = self.controller.get_history()
+            elif path == '/schedule_alarm':
+                cont = self.controller.schedule_alarm(data["alarm_time"])
             else:
                 cont = "this path doesn't exist"
             
@@ -80,7 +89,7 @@ class WebServer:
 
 
     async def handle_client(self, client, addr):
-        print(f"Handling client from {addr}")
+        #print(f"Handling client from {addr}")
         try:
             client.setblocking(False)
             request = b""
@@ -112,6 +121,7 @@ class WebServer:
                     if e.args[0] == 11:  # EAGAIN
                         await asyncio.sleep(0.1)
                         continue
+                    print("OS error line 115:", e)
                     raise
 
             # Parse request line
@@ -136,12 +146,8 @@ class WebServer:
                     if e.args[0] == 11:  # EAGAIN
                         await asyncio.sleep(0.1)
                         continue
+                    print("OS error line 139:", e)
                     raise
-
-            # Debug information
-            #print(f"Headers received: {headers}")
-            #print(f"Content-Length: {content_length}")
-            #print(f"Body length: {len(body)}")
                 
             # Get request body if present
             data = None
@@ -159,8 +165,7 @@ class WebServer:
             
             while data_sent < total_data:
                 try:
-                    # Send data in smaller chunks (e.g., 1024 bytes)
-                    chunk = response[data_sent:data_sent + 1024]
+                    chunk = response[data_sent:data_sent + 2048] # Send data in smaller chunks
                     bytes_written = client.write(chunk)
                     if bytes_written is None:
                         await asyncio.sleep(0.1)
@@ -174,6 +179,7 @@ class WebServer:
                         await asyncio.sleep(0.1)
                         continue
                     else:
+                        print("OS error line 177:", e)
                         # If the error is not EAGAIN, raise it
                         raise
                 except Exception as e:
@@ -184,33 +190,49 @@ class WebServer:
             print("Error handling client:", e)
         finally:
             client.close()
-            print(f"Connection closed for {addr}")
+            #print(f"Connection closed for {addr}")
 
     async def serve(self):
         addr = socket.getaddrinfo(self.ip_address, 80)[0][-1]
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-        s.bind(addr)
-        s.listen(5)
-        s.setblocking(False)
-        print(f"Server listening on http://{addr[0]}:{addr[1]}")
-        
-        while True:
-            try:
-                client, addr = s.accept()
-                asyncio.create_task(self.handle_client(client, addr))
-            except OSError as e:
-                if e.args[0] == 11:  # EAGAIN
-                    await asyncio.sleep(0.1)
-                    continue
-                print("Socket error:", e)
+        heartbeat_counter = 0
+                
+        try:
+            s.bind(addr)
+            s.listen(3)
+            s.setblocking(False)
+            print(f"Server listening on http://{addr[0]}:{addr[1]}")
+            
+            while True:
+                heartbeat_counter += 1
+                if heartbeat_counter % 100 == 0:  # Every ~10 seconds (assuming 100ms sleep)
+                    gc.collect()
+                    #print(f"Free memory: {gc.mem_free()}")
+                try:
+                    client, addr = s.accept()
+                    asyncio.create_task(self.handle_client(client, addr))
+                    
+                except OSError as e:
+                    if e.args[0] == 11:  # EAGAIN
+                        await asyncio.sleep_ms(100)
+                        continue
+                    print("Socket error:", e)
+                    await asyncio.sleep(1)  # Add delay on error
+                    
+        except Exception as e:
+            print(f"Server error: {e}")
+        finally:
+            s.close()
 
     async def start(self):
         """Start the web server"""
         if not self.ip_address:
             self.connect_wifi()
-        self.server_task = asyncio.create_task(self.serve())
+        await asyncio.sleep(0.1)
+        ntptime.settime()
+        if not self.server_task:
+            self.server_task = asyncio.create_task(self.serve())
         return self.server_task
 
     def stop(self):
@@ -218,3 +240,24 @@ class WebServer:
         if self.server_task:
             self.server_task.cancel()
             self.server_task = None
+            
+    def get_status(self):
+        """Get the status of the web server, including Wi-Fi and server task."""
+        status = {}
+
+        # Check if the server is running
+        if self.server_task and not self.server_task.done():
+            status['server'] = 'Running'
+        else:
+            status['server'] = 'Not Running'
+
+        # Check Wi-Fi connection
+        if self.check_wifi():
+            status['wifi'] = 'Connected'
+        else:
+            status['wifi'] = 'Not Connected'
+
+        # Include the current IP address if available
+        status['ip_address'] = self.ip_address if self.ip_address else 'N/A'
+
+        return status
