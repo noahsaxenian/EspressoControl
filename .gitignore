@@ -1,0 +1,5 @@
+# Ignore this script
+deploy.py
+
+# Ignore this entire folder
+not_used/
