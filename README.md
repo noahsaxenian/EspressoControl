@@ -2,9 +2,7 @@
 As cheap as possible PID control for an espresso machine, featuring a web app with temperature graphs, LCD screen, programmable espresso/steam settings, and auto heating timer, all run by a $5 ESP32C6 microcontroller.
 
 ## Web App
-![Screenshot of the front page of the web app](/assets/images/web_app.png)  ![Screenshot of the settings page of the web app](/assets/images/settings.png)
-
-
+The web app, hosted by the ESP32, has a power control panel with on/off switch, espresso/steam switch, and status text area. A temperature graph shows the measured and setpoint temperatures over the last 10 minutes. A scheduling area allows the user to schedule a timer for automatic heating. Finally, the user can set the temperature presets and PID values in the settings area. These are saved as defaults to the microcontroller so the settings are maintained on reboot.
 <table><tr><td><img src="/assets/images/web_app.png"></td><td><img src="/assets/images/settings.png"></td></tr></table>
 
 ## Components
