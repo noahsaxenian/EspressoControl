@@ -2,8 +2,7 @@
 As cheap as possible PID control for an espresso machine, featuring a web app with temperature graphs, LCD screen, programmable espresso/steam settings, and auto heating timer, all run by a $5 ESP32C6 microcontroller.
 
 ## Web App
-![Screenshot of the front page of the web app](/assets/images/web_app.png)
-![Screenshot of the settings page of the web app](/assets/images/settings.png)
+![Screenshot of the front page of the web app](/assets/images/web_app.png)![Screenshot of the settings page of the web app](/assets/images/settings.png)
 
 ## Components
 - TSIC306 temperature sensor - ZACwire protocol
