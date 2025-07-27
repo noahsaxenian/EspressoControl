@@ -1,6 +1,9 @@
 # Miss Silvia: Espresso Machine PID Controller
 As cheap as possible PID control for an espresso machine, featuring a web app with temperature graphs, LCD screen, programmable espresso/steam settings, and auto heating timer, all run by a $5 ESP32C6 microcontroller.
 
+## Web App
+![Screenshot of the front page of the web app](/assets/images/web_app.png)
+
 ## Components
 - TSIC306 temperature sensor - ZACwire protocol
 - SSR 40A DA (DC-AC)
