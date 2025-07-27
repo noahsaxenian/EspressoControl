@@ -4,6 +4,9 @@ As cheap as possible PID control for an espresso machine, featuring a web app wi
 ## Web App
 ![Screenshot of the front page of the web app](/assets/images/web_app.png)  ![Screenshot of the settings page of the web app](/assets/images/settings.png)
 
+
+<table><tr><td><img src="/assets/images/web_app.png"></td><td><img src="/assets/images/settings.png"></td></tr></table>
+
 ## Components
 - TSIC306 temperature sensor - ZACwire protocol
 - SSR 40A DA (DC-AC)
