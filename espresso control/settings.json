@@ -1,1 +1,1 @@
-{"mode_temps": {"steam": 140, "espresso": 100}, "PID": {"I": 0, "P": 0.5, "D": 0}}
+{"mode_temps": {"steam": 135, "espresso": 94}, "PID": {"I": 0.37, "P": 4.3, "D": 1}}
