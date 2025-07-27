@@ -6,11 +6,11 @@ The web app, hosted by the ESP32, has a power control panel with on/off switch, 
 <table><tr><td><img src="/assets/images/web_app.png"></td><td><img src="/assets/images/settings.png"></td></tr></table>
 
 ## Components
+- [ESP32C6 microcontroller](https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html)
 - TSIC306 temperature sensor - ZACwire protocol
 - SSR 40A DA (DC-AC)
 - SSD1306 0.96" OLED I2C display
 - KY-040 Rotary Encoder Module
-- ESP32c6
 - USB wall charger and type C cable (for powering ESP)
 - jumper cables, wire, 3D printed housing
 
