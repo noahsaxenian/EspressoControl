@@ -7,7 +7,7 @@ The web app, hosted by the ESP32, has a power control panel with on/off switch, 
 
 ## Components
 - [ESP32C6 microcontroller](https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html) ($5.20)
-- [TSIC306 TO92 temperature sensor] (https://www.digikey.com/en/products/detail/innovative-sensor-technology-usa-division/TSIC-306-TO92/13181022) ($5.35)
+- [TSIC306 TO92 temperature sensor](https://www.digikey.com/en/products/detail/innovative-sensor-technology-usa-division/TSIC-306-TO92/13181022) ($5.35)
 - SSR 40A DA (DC-AC)
 - SSD1306 0.96" OLED I2C display
 - KY-040 Rotary Encoder Module
