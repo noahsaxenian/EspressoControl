@@ -171,8 +171,8 @@ class SilviaControl:
         
     def turn_on(self):
         self.on = True
-        self.tsic.start()
         self.set_temp(self.mode_temps[self.mode])
+        self.tsic.start()
         
     def power_switch(self, on_string):
         self.on = (on_string == "on")
@@ -237,13 +237,18 @@ class SilviaControl:
     
     
     
-    def schedule_alarm(self, time_string):
-        if time_string:
-            current_time = time() + self.timezone * 3600
-            current_tuple = localtime(current_time)
+    def schedule_alarm(self, alarm_time_string, current_time_str):
+        if alarm_time_string:
+            # reset clock, it drifts
+            Y, M, D, h, m, s = map(int, current_time_str.split(":"))
+            RTC().datetime((Y, M, D, 0, h, m, s, 0))
+            
+            # setup alarm
+            current_time = time()
+            current_tuple = localtime()
             current_sec = current_tuple[3] * 3600 + current_tuple[4] * 60 + current_tuple[5]
             
-            hour, minute = map(int, time_string.split(":"))
+            hour, minute = map(int, alarm_time_string.split(":"))
             target_sec = hour * 3600 + minute * 60
             
             time_diff = target_sec - current_sec
@@ -255,7 +260,7 @@ class SilviaControl:
                 day = " Tomorrow"
                 
             self.alarm_time = current_time + alarm_sec
-            self.alarm_time_str = time_string # + day
+            self.alarm_time_str = alarm_time_string # + day
             
             if self.alarm_task:
                 self.alarm_task.cancel()
@@ -274,7 +279,7 @@ class SilviaControl:
     
     async def alarm(self):
         while True:
-            current_time = time() + self.timezone * 3600
+            current_time = time()
             remaining = self.alarm_time - current_time
             if remaining <= 0:
                 break
@@ -312,7 +317,6 @@ class SilviaControl:
         self.oled.show()
         
     def short_press(self):
-        print('short press')
         if self.on:
             self.turn_off()
         else:
@@ -320,7 +324,6 @@ class SilviaControl:
         self.draw_screen()
         
     def long_press(self):
-        print('long press')
         self.mode_switch()
             
     async def button_handler(self):
@@ -369,14 +372,14 @@ class SilviaControl:
                 await asyncio.sleep(0.5)
                 self.draw_screen()
                 await asyncio.sleep(0.5)
-                
             else:
                 # get the temp just once every 10 seconds
                 self.tsic.start()
                 await asyncio.sleep(2)
                 self.current_temp = self.get_temp()
                 self.draw_screen()
-                self.tsic.stop()
+                if not self.on:
+                    self.tsic.stop()
                 for i in range(8):
                     if self.on: # break early if switched back on
                         break

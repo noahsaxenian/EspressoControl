@@ -1,5 +1,4 @@
 import network
-import ntptime
 import socket
 import time
 from secrets import mysecrets
@@ -70,7 +69,7 @@ class WebServer:
             elif path == '/history':
                 cont = self.controller.get_history()
             elif path == '/schedule_alarm':
-                cont = self.controller.schedule_alarm(data["alarm_time"])
+                cont = self.controller.schedule_alarm(data["alarm_time"], data["current_time"])
             else:
                 cont = "this path doesn't exist"
             
@@ -230,7 +229,6 @@ class WebServer:
         if not self.ip_address:
             self.connect_wifi()
         await asyncio.sleep(0.1)
-        ntptime.settime()
         if not self.server_task:
             self.server_task = asyncio.create_task(self.serve())
         return self.server_task

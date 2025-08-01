@@ -133,15 +133,23 @@ setAlarmBtn.addEventListener("click", async () => {
         alert("Please select a time for the alarm.");
         return;
     }
+    const now = new Date();
+    const timeStr = `${now.getFullYear()}:${now.getMonth() + 1}:${now.getDate()}:${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
 
     // Send the time to the backend
-    await sendRequest("/schedule_alarm", { alarm_time: alarmTime });
+    await sendRequest("/schedule_alarm", { 
+        current_time: timeStr,
+        alarm_time: alarmTime
+    });
     
     document.getElementById("currentAlarm").textContent = alarmTime;
 });
 
 document.getElementById("cancelAlarmBtn").addEventListener("click", async () => {
-    await sendRequest("/schedule_alarm", { alarm_time: null });
+    await sendRequest("/schedule_alarm", { 
+        current_time: null,
+        alarm_time: null
+    });
     
     document.getElementById("currentAlarm").textContent = "--";
 });
