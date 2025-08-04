@@ -119,10 +119,11 @@ class ZACwire:
         
         counts = {}
         max_count = 0
-        mode = self.temp_buffer[0]
+        buffer = list(self.temp_buffer)
+        mode = buffer[0]
         
         # Count occurrences
-        for t in self.temp_buffer:
+        for t in buffer:
             if t in counts:
                 counts[t] += 1
             else:
@@ -131,9 +132,8 @@ class ZACwire:
                 max_count = counts[t]
                 mode = t
                 
-        if self.rawT in counts:
-            if counts[self.rawT] == max_count:
-                mode = self.rawT
+        if counts.get(self.rawT, 0) == max_count:
+            mode = self.rawT
         
         counts = None
                     

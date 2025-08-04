@@ -16,6 +16,7 @@ For convenience, most products are linked below. Note may of them can be aquired
 - jumper cables, wire, 3D printed housing
 
 ## Hardware Setup
+[Wiring Diagram] (/assets/images/web_app.png)
 
 ## Software Setup
 
