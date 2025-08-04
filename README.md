@@ -13,10 +13,14 @@ For convenience, most products are linked below. Note may of them can be aquired
 - [SSD1306 0.96" OLED I2C display](https://www.amazon.com/Hosyond-Display-Self-Luminous-Compatible-Raspberry/dp/B09T6SJBV5?ref_=ast_sto_dp&th=1)
 - [KY-040 Rotary Encoder Module](https://www.amazon.com/VILHTL-KY-040-Encoder-Development-Arduino%EF%BC%88Pack/dp/B0DNMFFTGX/ref=sr_1_1_sspa?crid=17DV33P1HROWF&dib=eyJ2IjoiMSJ9.kgY8Rvz4KDXdCnKIgtxIrQAfl_nj0FSD8fS7E3I3Rz0rnNe6ec2Ydy7ShTvfq9H4DF0NeT-_uk628EBHsr-JXRHlJIAaDddJ4kf7OkMvYpgnSVznPnXsToiX-Ybndj4D-6B4WCdLTublTVQjMIchR6D3LGTPoCxuJVOxuB1VvNYfcFXn7W50DceO-CNxcdmd.6q8NNlLorKvTxiK1ceRBZgaomiewn6d3G76TXCGNHVE&dib_tag=se&keywords=KY-040+Rotary+Encoder+Module&qid=1753636707&s=electronics&sprefix=ky-040+rotary+encoder+module%2Celectronics%2C129&sr=1-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&psc=1)
 - USB wall charger and type C cable (for powering ESP)
-- jumper cables, wire, 3D printed housing
-
+- [3D printed housing](https://cad.onshape.com/documents/fad365c2e571097730922e91/w/67505d48e3443e80230c7695/e/7c0b61bd32682dd326cb2e0a?renderMode=0&uiState=6890da7f4dc08f57801d85e8)
+- jumper cables, wire
 ## Hardware Setup
-[Wiring Diagram] (/assets/images/web_app.png)
+A full wiring diagram is shown below:
+![Wiring Diagram](/assets/images/wiring.jpeg)
+First, the SSR must be mounted. I bolted it to the inner metal fram with a bit of thermal paste, so the frame can act as a heat sink. The SSR is wired in place of the brew thermostat but can still be overridden by the steam switch. The steam thermostat is left in place as a safety.
+
+
 
 ## Software Setup
 
