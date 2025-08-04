@@ -19,8 +19,8 @@ For convenience, most products are linked below. Note may of them can be aquired
 A full wiring diagram is shown below:
 ![Wiring Diagram](/assets/images/wiring.jpeg)
 First, the SSR must be mounted. I bolted it to the inner metal fram with a bit of thermal paste, so the frame can act as a heat sink. The SSR is wired in place of the brew thermostat but can still be overridden by the steam switch. The steam thermostat is left in place as a safety.
-
-
-
-## Software Setup
+The TSIC306 temperature sensor is mounted under one of the boiler bolts, with a rubber washer to secure it and some thermal paste as well.
+<table><tr><td><img src="/assets/images/SSR.jpeg"></td><td><img src="/assets/images/tsic.jpeg"></td></tr></table>
+The USB brick is spliced into one of the main power lines to keep it always powered, even if the power switch is off. Then, the electronics are soldered up on a piece of prototyping board and mounted inside the housing. Two small holes are drilled into the underside of the machine frame to bolt the electronics housing in place.
+<table><tr><td><img src="/assets/images/electronics.jpeg"></td><td><img src="/assets/images/electronics2.jpeg"></td></tr></table>
 
